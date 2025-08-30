@@ -62,11 +62,12 @@
   </div>
 
   <script>
-    async function atualizar() {
-      try {
-        const res = await fetch("dados.json?_=" + Date.now()); // força atualizar
-        const dados = await res.json();
+    const ws = new WebSocket("ws://" + location.host + "/ws");
 
+    ws.onmessage = (event) => {
+      try {
+        const dados = JSON.parse(event.data);
+        
         document.getElementById("nomeA").textContent = dados.timeA;
         document.getElementById("golsA").textContent = dados.golsA;
         document.getElementById("nomeB").textContent = dados.timeB;
@@ -77,11 +78,17 @@
           (dados.segundos < 10 ? "0" : "") + dados.segundos;
 
       } catch (e) {
-        console.error("Erro ao carregar JSON", e);
+        console.error("Erro ao processar dados do WebSocket", e);
       }
-    }
+    };
 
-    setInterval(atualizar, 1000);
+    ws.onclose = () => {
+      console.log("Conexão WebSocket fechada.");
+    };
+
+    ws.onerror = (err) => {
+      console.error("Erro no WebSocket:", err);
+    };
   </script>
 </body>
 </html>
