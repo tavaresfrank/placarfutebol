@@ -8,12 +8,10 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static("."));
 
-// Inicializa o servidor WebSocket
 const wss = new WebSocket.Server({ noServer: true });
 
 wss.on("connection", (ws) => {
   console.log("Novo cliente de placar conectado.");
-  // Envia os dados atuais assim que a conexão é estabelecida
   fs.readFile("dados.json", (err, data) => {
     if (!err) {
       ws.send(data.toString());
@@ -21,7 +19,6 @@ wss.on("connection", (ws) => {
   });
 });
 
-// Rota para ler o JSON
 app.get("/dados", (req, res) => {
   fs.readFile("dados.json", (err, data) => {
     if (err) res.status(500).send("Erro ao ler JSON");
@@ -29,7 +26,6 @@ app.get("/dados", (req, res) => {
   });
 });
 
-// Rota para salvar no JSON e enviar via WebSocket
 app.post("/dados", (req, res) => {
   let dados = req.body;
   if (dados.reset) {
@@ -43,7 +39,6 @@ app.post("/dados", (req, res) => {
     if (err) {
       res.status(500).send("Erro ao salvar JSON");
     } else {
-      // Envia os dados atualizados para todos os clientes conectados
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(dadosString);
