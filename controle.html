@@ -32,7 +32,6 @@
   </div>
   
   <div class="linha">
-    <button onclick="salvarDados()">Atualizar Placar</button>
     <button onclick="iniciarTempo()">Start</button>
     <button onclick="pausarTempo()">Pause</button>
     <button onclick="reiniciarTempo()">Reset</button>
@@ -47,7 +46,6 @@
         const res = await fetch("/dados");
         const dados = await res.json();
         
-        // Atualiza as variáveis e os campos do formulário com os dados do servidor
         golsA = dados.golsA;
         golsB = dados.golsB;
         document.getElementById("golsA").textContent = golsA;
@@ -65,6 +63,7 @@
     // Carrega os dados assim que a página é carregada
     window.onload = carregarDados;
 
+    // Atualiza os gols e envia para o servidor
     function mudarPlacar(time, valor) {
       if(time === "A") {
         golsA = Math.max(0, golsA + valor);
@@ -73,9 +72,11 @@
         golsB = Math.max(0, golsB + valor);
         document.getElementById("golsB").textContent = golsB;
       }
+      enviarDados({ gols: true });
     }
 
-    async function enviarDados(rodando = false, reset = false) {
+    // Função para enviar os dados para o servidor
+    async function enviarDados(opcoes = {}) {
       const dados = {
         timeA: document.getElementById("timeA").value,
         golsA: golsA,
@@ -83,8 +84,8 @@
         golsB: golsB,
         minutos: parseInt(document.getElementById("minutos").value),
         segundos: parseInt(document.getElementById("segundos").value),
-        rodando: rodando,
-        reset: reset
+        rodando: opcoes.rodando,
+        reset: opcoes.reset
       };
 
       try {
@@ -102,22 +103,23 @@
       }
     }
 
-    function salvarDados() {
-      enviarDados();
-    }
+    // Escuta a mudança nos campos de nome para atualizar em tempo real
+    document.getElementById("timeA").addEventListener("input", () => enviarDados({ nomes: true }));
+    document.getElementById("timeB").addEventListener("input", () => enviarDados({ nomes: true }));
 
+    // Funções para controle do tempo
     function iniciarTempo() {
-      enviarDados(true);
+      enviarDados({ rodando: true });
     }
 
     function pausarTempo() {
-      enviarDados(false);
+      enviarDados({ rodando: false });
     }
 
     function reiniciarTempo() {
       document.getElementById("minutos").value = 0;
       document.getElementById("segundos").value = 0;
-      enviarDados(false, true);
+      enviarDados({ rodando: false, reset: true });
     }
   </script>
 </body>

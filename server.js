@@ -27,25 +27,46 @@ app.get("/dados", (req, res) => {
 });
 
 app.post("/dados", (req, res) => {
-  let dados = req.body;
-  if (dados.reset) {
-    dados.minutos = 0;
-    dados.segundos = 0;
-  }
-  
-  const dadosString = JSON.stringify(dados, null, 2);
+  let novosDados = req.body;
 
-  fs.writeFile("dados.json", dadosString, (err) => {
-    if (err) {
-      res.status(500).send("Erro ao salvar JSON");
-    } else {
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(dadosString);
-        }
-      });
-      res.send("Salvo e atualizado com sucesso");
+  fs.readFile("dados.json", (err, data) => {
+    if (err) return res.status(500).send("Erro ao ler JSON");
+
+    let dadosAtuais = JSON.parse(data);
+
+    // Atualiza apenas os dados relevantes
+    dadosAtuais.timeA = novosDados.timeA;
+    dadosAtuais.timeB = novosDados.timeB;
+    dadosAtuais.golsA = novosDados.golsA;
+    dadosAtuais.golsB = novosDados.golsB;
+
+    // Lógica para o timer
+    if (novosDados.rodando !== undefined) {
+      dadosAtuais.rodando = novosDados.rodando;
     }
+    if (novosDados.reset) {
+      dadosAtuais.minutos = 0;
+      dadosAtuais.segundos = 0;
+    } else {
+      // Se não for um reset, atualiza o tempo
+      dadosAtuais.minutos = novosDados.minutos;
+      dadosAtuais.segundos = novosDados.segundos;
+    }
+    
+    const dadosString = JSON.stringify(dadosAtuais, null, 2);
+
+    fs.writeFile("dados.json", dadosString, (err) => {
+      if (err) {
+        res.status(500).send("Erro ao salvar JSON");
+      } else {
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(dadosString);
+          }
+        });
+        res.send("Salvo e atualizado com sucesso");
+      }
+    });
   });
 });
 
