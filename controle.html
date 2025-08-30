@@ -30,10 +30,10 @@
     <label>Min: <input type="number" id="minutos" value="0"></label>
     <label>Seg: <input type="number" id="segundos" value="0"></label>
   </div>
-
-  <button onclick="gerarJSON()">Gerar JSON</button>
-
-  <pre id="saida"></pre>
+  
+  <div class="linha">
+    <button onclick="salvarDados()">Atualizar Placar</button>
+  </div>
 
   <script>
     let golsA = 0, golsB = 0;
@@ -48,7 +48,7 @@
       }
     }
 
-    function gerarJSON() {
+    async function salvarDados() {
       const dados = {
         timeA: document.getElementById("timeA").value,
         golsA: golsA,
@@ -59,9 +59,19 @@
         rodando: false
       };
 
-      document.getElementById("saida").textContent = JSON.stringify(dados, null, 2);
-
-      // Aqui seria a parte de enviar para o servidor salvar em dados.json
+      try {
+        const res = await fetch("/dados", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(dados),
+        });
+        const resposta = await res.text();
+        console.log(resposta);
+      } catch (e) {
+        console.error("Erro ao salvar dados", e);
+      }
     }
   </script>
 </body>
