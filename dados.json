@@ -1,0 +1,9 @@
+{
+  "timeA": "Time A",
+  "golsA": 0,
+  "timeB": "Time B",
+  "golsB": 0,
+  "minutos": 0,
+  "segundos": 0,
+  "rodando": false
+}

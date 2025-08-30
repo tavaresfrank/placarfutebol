@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle do Placar</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, button { margin: 5px; padding: 8px; font-size: 16px; }
+    .linha { margin-bottom: 15px; }
+  </style>
+</head>
+<body>
+  <h1>Controle do Placar</h1>
+
+  <div class="linha">
+    <label>Time A: <input type="text" id="timeA" value="Time A"></label>
+    <button onclick="mudarPlacar('A',1)">+1</button>
+    <button onclick="mudarPlacar('A',-1)">-1</button>
+    <span id="golsA">0</span>
+  </div>
+
+  <div class="linha">
+    <label>Time B: <input type="text" id="timeB" value="Time B"></label>
+    <button onclick="mudarPlacar('B',1)">+1</button>
+    <button onclick="mudarPlacar('B',-1)">-1</button>
+    <span id="golsB">0</span>
+  </div>
+
+  <div class="linha">
+    <label>Min: <input type="number" id="minutos" value="0"></label>
+    <label>Seg: <input type="number" id="segundos" value="0"></label>
+  </div>
+
+  <button onclick="gerarJSON()">Gerar JSON</button>
+
+  <pre id="saida"></pre>
+
+  <script>
+    let golsA = 0, golsB = 0;
+
+    function mudarPlacar(time, valor) {
+      if(time === "A") {
+        golsA = Math.max(0, golsA + valor);
+        document.getElementById("golsA").textContent = golsA;
+      } else {
+        golsB = Math.max(0, golsB + valor);
+        document.getElementById("golsB").textContent = golsB;
+      }
+    }
+
+    function gerarJSON() {
+      const dados = {
+        timeA: document.getElementById("timeA").value,
+        golsA: golsA,
+        timeB: document.getElementById("timeB").value,
+        golsB: golsB,
+        minutos: parseInt(document.getElementById("minutos").value),
+        segundos: parseInt(document.getElementById("segundos").value),
+        rodando: false
+      };
+
+      document.getElementById("saida").textContent = JSON.stringify(dados, null, 2);
+
+      // Aqui seria a parte de enviar para o servidor salvar em dados.json
+    }
+  </script>
+</body>
+</html>
