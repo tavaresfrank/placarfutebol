@@ -31,15 +31,22 @@ app.get("/dados", (req, res) => {
 
 // Rota para salvar no JSON e enviar via WebSocket
 app.post("/dados", (req, res) => {
-  const dados = JSON.stringify(req.body, null, 2);
-  fs.writeFile("dados.json", dados, (err) => {
+  let dados = req.body;
+  if (dados.reset) {
+    dados.minutos = 0;
+    dados.segundos = 0;
+  }
+  
+  const dadosString = JSON.stringify(dados, null, 2);
+
+  fs.writeFile("dados.json", dadosString, (err) => {
     if (err) {
       res.status(500).send("Erro ao salvar JSON");
     } else {
       // Envia os dados atualizados para todos os clientes conectados
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
-          client.send(dados);
+          client.send(dadosString);
         }
       });
       res.send("Salvo e atualizado com sucesso");
