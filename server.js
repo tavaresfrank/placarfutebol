@@ -39,18 +39,23 @@ app.post("/dados", (req, res) => {
     dadosAtuais.timeB = novosDados.timeB;
     dadosAtuais.golsA = novosDados.golsA;
     dadosAtuais.golsB = novosDados.golsB;
-
-    // Lógica para o timer
+    
+    // Atualiza o estado de rodando apenas se um valor for enviado
     if (novosDados.rodando !== undefined) {
       dadosAtuais.rodando = novosDados.rodando;
     }
+    
+    // Se o cliente enviar minutos e segundos, atualiza, a menos que seja um reset
     if (novosDados.reset) {
-      dadosAtuais.minutos = 0;
-      dadosAtuais.segundos = 0;
+        dadosAtuais.minutos = 0;
+        dadosAtuais.segundos = 0;
     } else {
-      // Se não for um reset, atualiza o tempo
-      dadosAtuais.minutos = novosDados.minutos;
-      dadosAtuais.segundos = novosDados.segundos;
+        if (novosDados.minutos !== undefined) {
+            dadosAtuais.minutos = novosDados.minutos;
+        }
+        if (novosDados.segundos !== undefined) {
+            dadosAtuais.segundos = novosDados.segundos;
+        }
     }
     
     const dadosString = JSON.stringify(dadosAtuais, null, 2);

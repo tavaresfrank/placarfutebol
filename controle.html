@@ -39,6 +39,7 @@
 
   <script>
     let golsA = 0, golsB = 0;
+    let timerInterval = null;
 
     // Função para carregar os dados salvos do servidor
     async function carregarDados() {
@@ -55,15 +56,18 @@
         document.getElementById("minutos").value = dados.minutos;
         document.getElementById("segundos").value = dados.segundos;
 
+        // Se o jogo estava rodando, reinicia o timer do controle
+        if (dados.rodando && !timerInterval) {
+            iniciarContagemNoControle();
+        }
       } catch (e) {
         console.error("Erro ao carregar dados", e);
       }
     }
 
-    // Carrega os dados assim que a página é carregada
     window.onload = carregarDados;
 
-    // Atualiza os gols e envia para o servidor
+    // Envia apenas o estado do placar (gols e nomes)
     function mudarPlacar(time, valor) {
       if(time === "A") {
         golsA = Math.max(0, golsA + valor);
@@ -72,10 +76,14 @@
         golsB = Math.max(0, golsB + valor);
         document.getElementById("golsB").textContent = golsB;
       }
-      enviarDados({ gols: true });
+      enviarDados();
     }
 
-    // Função para enviar os dados para o servidor
+    // Escuta a mudança nos campos de nome para atualizar em tempo real
+    document.getElementById("timeA").addEventListener("input", enviarDados);
+    document.getElementById("timeB").addEventListener("input", enviarDados);
+
+    // Função central para enviar dados
     async function enviarDados(opcoes = {}) {
       const dados = {
         timeA: document.getElementById("timeA").value,
@@ -89,38 +97,51 @@
       };
 
       try {
-        const res = await fetch("/dados", {
+        await fetch("/dados", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(dados),
         });
-        const resposta = await res.text();
-        console.log(resposta);
       } catch (e) {
         console.error("Erro ao salvar dados", e);
       }
     }
-
-    // Escuta a mudança nos campos de nome para atualizar em tempo real
-    document.getElementById("timeA").addEventListener("input", () => enviarDados({ nomes: true }));
-    document.getElementById("timeB").addEventListener("input", () => enviarDados({ nomes: true }));
-
+    
     // Funções para controle do tempo
     function iniciarTempo() {
-      enviarDados({ rodando: true });
+        enviarDados({ rodando: true });
+        iniciarContagemNoControle();
     }
 
     function pausarTempo() {
-      enviarDados({ rodando: false });
+        enviarDados({ rodando: false });
+        clearInterval(timerInterval);
+        timerInterval = null;
     }
 
     function reiniciarTempo() {
-      document.getElementById("minutos").value = 0;
-      document.getElementById("segundos").value = 0;
-      enviarDados({ rodando: false, reset: true });
+        pausarTempo();
+        document.getElementById("minutos").value = 0;
+        document.getElementById("segundos").value = 0;
+        enviarDados({ rodando: false, reset: true });
     }
+    
+    function iniciarContagemNoControle() {
+        if (timerInterval) return; // Não inicia se já estiver rodando
+        timerInterval = setInterval(() => {
+            let min = parseInt(document.getElementById("minutos").value);
+            let seg = parseInt(document.getElementById("segundos").value);
+            seg++;
+            if (seg === 60) {
+                seg = 0;
+                min++;
+            }
+            document.getElementById("minutos").value = min;
+            document.getElementById("segundos").value = seg;
+            enviarDados(); // Envia o tempo atualizado a cada segundo
+        }, 1000);
+    }
+
   </script>
 </body>
 </html>
