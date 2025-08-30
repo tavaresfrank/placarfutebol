@@ -33,6 +33,9 @@
   
   <div class="linha">
     <button onclick="salvarDados()">Atualizar Placar</button>
+    <button onclick="iniciarTempo()">Start</button>
+    <button onclick="pausarTempo()">Pause</button>
+    <button onclick="reiniciarTempo()">Reset</button>
   </div>
 
   <script>
@@ -48,7 +51,7 @@
       }
     }
 
-    async function salvarDados() {
+    async function enviarDados(rodando = false, reset = false) {
       const dados = {
         timeA: document.getElementById("timeA").value,
         golsA: golsA,
@@ -56,7 +59,8 @@
         golsB: golsB,
         minutos: parseInt(document.getElementById("minutos").value),
         segundos: parseInt(document.getElementById("segundos").value),
-        rodando: false
+        rodando: rodando,
+        reset: reset
       };
 
       try {
@@ -72,6 +76,24 @@
       } catch (e) {
         console.error("Erro ao salvar dados", e);
       }
+    }
+
+    function salvarDados() {
+      enviarDados();
+    }
+
+    function iniciarTempo() {
+      enviarDados(true);
+    }
+
+    function pausarTempo() {
+      enviarDados(false);
+    }
+
+    function reiniciarTempo() {
+      document.getElementById("minutos").value = 0;
+      document.getElementById("segundos").value = 0;
+      enviarDados(false, true);
     }
   </script>
 </body>
