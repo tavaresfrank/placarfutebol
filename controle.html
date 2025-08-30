@@ -41,6 +41,30 @@
   <script>
     let golsA = 0, golsB = 0;
 
+    // Função para carregar os dados salvos do servidor
+    async function carregarDados() {
+      try {
+        const res = await fetch("/dados");
+        const dados = await res.json();
+        
+        // Atualiza as variáveis e os campos do formulário com os dados do servidor
+        golsA = dados.golsA;
+        golsB = dados.golsB;
+        document.getElementById("golsA").textContent = golsA;
+        document.getElementById("golsB").textContent = golsB;
+        document.getElementById("timeA").value = dados.timeA;
+        document.getElementById("timeB").value = dados.timeB;
+        document.getElementById("minutos").value = dados.minutos;
+        document.getElementById("segundos").value = dados.segundos;
+
+      } catch (e) {
+        console.error("Erro ao carregar dados", e);
+      }
+    }
+
+    // Carrega os dados assim que a página é carregada
+    window.onload = carregarDados;
+
     function mudarPlacar(time, valor) {
       if(time === "A") {
         golsA = Math.max(0, golsA + valor);
