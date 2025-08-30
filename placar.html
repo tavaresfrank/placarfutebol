@@ -62,7 +62,22 @@
   </div>
 
   <script>
-    const ws = new WebSocket("ws://" + location.host + "/ws");
+    let intervalId = null;
+    let minutos = 0;
+    let segundos = 0;
+    const protocol = location.protocol === "https:" ? "wss:" : "ws:";
+    const ws = new WebSocket(protocol + "//" + location.host + "/ws");
+
+    function atualizarTempo() {
+      segundos++;
+      if (segundos === 60) {
+        segundos = 0;
+        minutos++;
+      }
+      document.getElementById("tempo").textContent = 
+        (minutos < 10 ? "0" : "") + minutos + ":" +
+        (segundos < 10 ? "0" : "") + segundos;
+    }
 
     ws.onmessage = (event) => {
       try {
@@ -73,9 +88,21 @@
         document.getElementById("nomeB").textContent = dados.timeB;
         document.getElementById("golsB").textContent = dados.golsB;
 
+        minutos = dados.minutos;
+        segundos = dados.segundos;
+
         document.getElementById("tempo").textContent =
-          (dados.minutos < 10 ? "0" : "") + dados.minutos + ":" +
-          (dados.segundos < 10 ? "0" : "") + dados.segundos;
+          (minutos < 10 ? "0" : "") + minutos + ":" +
+          (segundos < 10 ? "0" : "") + segundos;
+
+        if (dados.rodando && !intervalId) {
+          intervalId = setInterval(atualizarTempo, 1000);
+          console.log("Cronômetro iniciado.");
+        } else if (!dados.rodando && intervalId) {
+          clearInterval(intervalId);
+          intervalId = null;
+          console.log("Cronômetro pausado.");
+        }
 
       } catch (e) {
         console.error("Erro ao processar dados do WebSocket", e);
